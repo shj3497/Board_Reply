@@ -202,7 +202,7 @@ public class BoardController {
 	
 	// 패스워드 확인
 	// @param b_num, @param b_pwd, @return int
-	// @ResponseBody 는 전달된 뷰를 통해서 츌력하는 것이 아니라 HTTP Response Body에 직접 출력하는 방식
+	// @ResponseBody 는 전달된 뷰를 통해서 출력하는 것이 아니라 HTTP Response Body에 직접 출력하는 방식
 	@RequestMapping(value="/pwdConfirm", method=RequestMethod.POST)
 	@ResponseBody
 	public String pwdConfirm(@ModelAttribute BoardVO bvo) {
