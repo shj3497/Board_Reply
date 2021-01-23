@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+						"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.reply.dao.ReplyDAO">
+
+	<resultMap type="com.spring.reply.vo.ReplyVO" id="replyVO">
+		<result column="R_NUM"	 	property="r_num" />
+		<result column="B_NUM" 		property="b_num" />
+		<result column="R_NAME"		property="r_name" />
+		<result column="R_CONTENT"	property="r_content" />
+		<result column="R_PWD" 		property="r_pwd" />
+		<result column="R_DATE" 	property="r_date" />
+	</resultMap>
+
+	<!-- 게시물 등록 -->
+	<select id="replyList" parameterType="com.spring.reply.vo.ReplyVO" resultMap="replyVO" >
+		SELECT 	R_NUM, B_NUM, R_NAME, R_CONTENT, R_PWD, 
+				TO_CHAR(R_DATE, 'YYYY-MM-DD HH24:MI:SS') AS R_DATE
+		FROM	SPRING_STUDY_REPLY
+		WHERE 	B_NUM = #{b_num, jdbcType=VARCHAR}
+		ORDER BY R_NUM DESC
+	</select>
+	
+	<!-- 게시물 등록 -->
+	<insert id="replyInsert" parameterType="com.spring.reply.vo.ReplyVO">
+		INSERT INTO SPRING_STUDY_REPLY(
+			R_NUM, B_NUM, R_NAME, R_CONTENT, R_PWD, R_DATE
+		)
+		VALUES(
+			#{r_num, jdbcType=VARCHAR},
+			#{b_num, jdbcType=VARCHAR},
+			#{r_name, jdbcType=VARCHAR},
+			#{r_content, jdbcType=VARCHAR},
+			#{r_pwd, jdbcType=VARCHAR},
+			SYSDATE
+		)
+	</insert>
+	
+	<!-- 게시물 업데이트 -->
+	<update id="replyUpdate" parameterType="com.spring.reply.vo.ReplyVO">
+		UPDATE SPRING_STUDY_REPLY
+		SET		R_CONTENT = #{r_content, jdbcType=VARCHAR},
+				R_DATE = SYSDATE
+		WHRER 	R_NUM = #{r_num, jdbcType=VARCHAR} 
+	</update>
+	
+	<!-- 게시물 삭제 -->
+	<delete id="replyDelete" parameterType="com.spring.reply.vo.ReplyVO">
+		DELETE FROM SPRING_STUDY_REPLY
+		WHERE	R_NUM = #{r_num, jdbcType=VARCHAR}
+	</delete>
+	
+</mapper>

@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.board.dao.BoardDAO">
+
+	<resultMap type="com.spring.board.vo.BoardVO" id="boardVO">
+		<result column="B_NUM" property="b_num"/>
+		<result column="B_NAME" property="b_name"/>
+		<result column="B_TITLE" property="b_title"/>
+		<result column="B_CONTENT" property="b_content"/>
+		<result column="B_FILE" property="b_file"/>
+		<result column="B_PWD" property="b_pwd"/>
+		<result column="B_DELYN" property="b_delyn"/>
+		<result column="B_INSERTDATE" property="b_insertdate"/>
+		<result column="B_UPDATEDATE" property="b_updatedate"/>
+	</resultMap>
+	
+	<sql id="boardCommon">
+		SELECT
+				B_NUM,
+				B_NAME,
+				B_TITLE,
+				B_UPDATEDATE
+		FROM SPRING_STUDY_BOARD
+		<trim prefix="WHERE" prefixOverrides="AND">
+			<if test = "search == 'b_title'">
+				<![CDATA[b_title LIKE '%'||#{keyword, jdbcType=VARCHAR}||'%']]>
+			</if>
+			<if test = "search == 'b_content'">
+				<![CDATA[AND b_content LIKE '%'||#{keyword, jdbcType=VARCHAR}||'%']]>
+			</if>
+			<if test = "search == 'b_name'">
+				<![CDATA[AND b_name LIKE '%'||#{keyword, jdbcType=VARCHAR}||'%']]>
+			</if>
+		</trim>
+	
+	</sql>
+	<!-- 게시물 기본 조회 v1(기본 조회버전)
+	<select id="boardList" parameterType="com.spring.board.vo.BoardVO" resultMap="boardVO">
+	
+		SELECT
+				B_NUM,
+				B_NAME,
+				B_TITLE,
+				TO_CHAR(B_UPDATEDATE,'YYYY-MM-DD HH24:MI:SS') AS B_UPDATEDATE
+		FROM	SPRING_STUDY_BOARD
+		WHERE 	B_DELYN = 'Y'
+	</select>
+	 -->
+	 <!-- 게시물 목록 조회 v2 -->
+	 <select id="boardList" parameterType="com.spring.board.vo.BoardVO" resultMap="boardVO">
+	
+		SELECT
+				B_NUM,
+				B_NAME,
+				B_TITLE,
+				TO_CHAR(B_UPDATEDATE,'YYYY-MM-DD HH24:MI:SS') AS B_UPDATEDATE
+		FROM   (
+				SELECT	LIST.*, ROWNUM AS RNUM
+				FROM(
+					<include refid="boardCommon"></include><!-- where절을 id값으로 불러서 사용한거고 -->
+					<choose><!-- order by절을 switch문같은? order_by라는 변수가 b_num이면 선택 -->
+						<when test="order_by=='b_num'">
+							ORDER BY B_NUM
+						</when>
+						<when test="order_by=='b_updatedate'">
+							ORDER BY B_UPDATEDATE
+						</when>
+					</choose>
+					<choose>
+						<when test="order_sc=='ASC'">
+							ASC
+						</when>
+						<when test="order_sc=='DESC'">
+							DESC
+						</when>
+					</choose>
+					) LIST
+				)
+		<where>
+			<if test="start_row != null and start_row !='' ">
+				<if test="end_row !=null and end_row !='' ">
+					RNUM BETWEEN #{start_row} AND #{end_row}
+				</if>
+			</if>
+		</where>
+	</select>
+	
+	<select id="boardListCnt" parameterType="com.spring.board.vo.BoardVO" resultType="int">
+		SELECT NVL(COUNT(1),0)
+		FROM(
+			SELECT LIST.*, ROWNUM AS RNUM
+			FROM(
+				<include refid="boardCommon"></include>
+				ORDER BY B_NUM DESC
+				) LIST
+			) 
+	</select>
+	 
+	 
+	 
+	 
+	 
+	<!-- 상세 페이지를 위한 게시물 조회 -->
+	<select id="boardDetail" parameterType="com.spring.board.vo.BoardVO" resultMap="boardVO">
+		SELECT
+				B_NUM,
+				B_NAME,
+				B_TITLE,
+				B_CONTENT,
+				B_FILE,
+				TO_CHAR(B_UPDATEDATE,'YYYY-MM-DD HH24:MI:SS') AS B_UPDATEDATE
+		FROM	SPRING_STUDY_BOARD
+		WHERE 	B_DELYN = 'Y'
+			AND B_NUM = #{b_num, jdbcType=VARCHAR}
+	</select>
+	
+	<!-- 게시물 등록 -->
+	<insert id="boardInsert" parameterType="com.spring.board.vo.BoardVO">
+		INSERT INTO SPRING_STUDY_BOARD(
+				B_NUM,
+				B_NAME,
+				B_TITLE,
+				B_CONTENT,
+				B_FILE,
+				B_PWD,
+				B_DELYN,
+				B_INSERTDATE,
+				B_UPDATEDATE )
+		VALUES(
+				#{b_num, jdbcType=VARCHAR},
+				#{b_name, jdbcType=VARCHAR},
+				#{b_title, jdbcType=VARCHAR},
+				#{b_content, jdbcType=VARCHAR},
+				#{b_file, jdbcType=VARCHAR},
+				#{b_pwd, jdbcType=VARCHAR},
+				'Y',
+				SYSDATE,
+				SYSDATE	)
+	</insert>
+	
+	<!-- 게시물 수정 -->
+	<update id="boardUpdate" parameterType="com.spring.board.vo.BoardVO">
+		UPDATE 	SPRING_STUDY_BOARD
+		SET		 B_TITLE = #{b_title, jdbcType=VARCHAR}
+				,B_NAME = #{b_name, jdbcType=VARCHAR}
+				,B_CONTENT = #{b_content, jdbcType=VARCHAR}
+				,B_UPDATEDATE = SYSDATE
+		<if test="b_file != '' ">
+				,B_FILE = #{b_file, jdbcType=VARCHAR}
+		</if>
+		<if test="b_pwd != null and b_pwd != '' ">
+				,B_PWD = #{b_pwd, jdbcType=VARCHAR}
+		</if>
+		WHERE 	B_DELYN = 'Y'
+			AND	B_NUM = #{b_num, jdbcType=VARCHAR}
+	</update>
+	
+	<!-- 게시물 삭제 -->
+	<update id="boardDelete" parameterType="com.spring.board.vo.BoardVO">
+		UPDATE	SPRING_STUDY_BOARD
+		SET		B_DELYN = 'N'
+		WHERE 	B_DELYN = 'Y'
+			AND	B_NUM = #{b_num, jdbcType=VARCHAR}
+	</update>
+	
+	<!-- 해당 게시물의 비밀번호 확인 -->
+	<select id="pwdConfirm" parameterType="com.spring.board.vo.BoardVO" resultMap="boardVO">
+		SELECT 	B_NUM
+		FROM	SPRING_STUDY_BOARD
+		WHERE 	B_NUM = #{b_num, jdbcType=VARCHAR}
+			AND	B_PWD = #{b_pwd, jdbcType=VARCHAR}
+	</select>
+</mapper>
+

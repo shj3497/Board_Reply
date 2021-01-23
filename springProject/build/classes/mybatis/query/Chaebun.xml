@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.common.chaebun.dao.ChaebunDAO">
+	
+	<resultMap type="com.spring.board.vo.BoardVO" id="boardVO">
+		<result column="B_NUM" property="b_num"/>
+		<result column="B_NAME" property="b_name"/>
+		<result column="B_TITLE" property="b_title"/>
+		<result column="B_CONTENT" property="b_content"/>
+		<result column="B_FILE" property="b_file"/>
+		<result column="B_PWD" property="b_pwd"/>
+		<result column="B_DELYN" property="b_delyn"/>
+		<result column="B_INSERTDATE" property="b_insertdate"/>
+		<result column="B_UPDATEDATE" property="b_updatedate"/>
+	</resultMap>
+	
+	<resultMap type="com.spring.reply.vo.ReplyVO" id="replyVO">
+		<result column="R_NUM"	 	property="r_num" />
+		<result column="B_NUM" 		property="b_num" />
+		<result column="R_NAME"		property="r_name" />
+		<result column="R_CONTENT"	property="r_content" />
+		<result column="R_PWD" 		property="r_pwd" />
+		<result column="R_DATE" 	property="r_date" />
+	</resultMap>
+	
+	<select id="getChaebun" parameterType="com.spring.board.vo.BoardVO" resultMap="boardVO">
+		SELECT	NVL(MAX(SUBSTR(S.B_NUM, -4, 4)), 0) + 1 AS B_NUM
+		FROM	SPRING_STUDY_BOARD S
+	</select>
+	
+	<select id="getChaebun_r" parameterType="com.spring.reply.vo.ReplyVO" resultMap="replyVO">
+		SELECT	NVL(MAX(SUBSTR(S.R_NUM, -4, 4)), 0) + 1 AS R_NUM
+		FROM	SPRING_STUDY_REPLY S
+	</select>
+</mapper>
